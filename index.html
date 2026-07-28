@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة متوسط السهم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #ffffff;
+    --panel: #fbfaff;
+    --panel-2: #f3effc;
+    --border: #e6def7;
+    --purple: #7c3aed;
+    --purple-dark: #4c1d95;
+    --purple-deep: #2e1065;
+    --purple-soft: #a78bfa;
+    --text: #201a33;
+    --text-dim: #6f6685;
+    --green: #0d9668;
+    --green-bg: #e8f8f2;
+    --green-border: #b7e8d4;
+    --red: #e11d48;
+    --red-bg: #fdeef1;
+    --red-border: #f5c2cf;
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 12% 0%, #f1ebfc 0%, transparent 45%),
+                       radial-gradient(circle at 100% 100%, #f6f1fd 0%, transparent 40%);
+    background-attachment: fixed;
+    font-family: 'Tajawal', sans-serif;
+    color: var(--text);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding: 32px 16px 60px;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .wrap{ width:100%; max-width: 460px; }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 18px;
+    gap: 10px;
+  }
+  .ticker{
+    display:flex; align-items:center; gap:8px;
+    overflow:hidden; white-space:nowrap;
+    border:1px solid var(--border);
+    background: var(--panel-2);
+    border-radius: 999px;
+    padding: 8px 14px;
+    color: var(--purple-dark);
+    font-size: 12px;
+    letter-spacing: .3px;
+    flex: 1;
+  }
+  .ticker .dot{ width:6px; height:6px; border-radius:50%; background: var(--purple); box-shadow: 0 0 8px var(--purple-soft); flex:none; animation: blink 1.6s infinite; }
+  @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .langtoggle{
+    flex:none;
+    display:flex;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .langtoggle button{
+    border:none; background: transparent; cursor:pointer;
+    font-family:'Tajawal', sans-serif;
+    font-size: 12px; font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: var(--text-dim);
+    transition: background .15s, color .15s;
+  }
+  .langtoggle button.active{
+    background: var(--purple);
+    color: #fff;
+  }
+
+  .board{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 22px 22px;
+    box-shadow: 0 30px 60px -30px rgba(76, 29, 149, 0.25), inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+
+  h1{
+    font-size: 22px;
+    font-weight: 900;
+    margin: 0 0 4px;
+    color: var(--purple-deep);
+  }
+  .sub{
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin: 0 0 22px;
+    line-height:1.7;
+  }
+
+  .field{ margin-bottom: 16px; }
+  .field label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field label .code{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--purple-soft);
+    letter-spacing: 1px;
+  }
+  .inputbox{
+    position:relative;
+    display:flex; align-items:center;
+    background: #ffffff;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0 12px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .inputbox:focus-within{
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+  }
+  .inputbox .unit{
+    font-family:'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    font-size: 13px;
+    flex:none;
+  }
+  .inputbox input{
+    width:100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 18px;
+    padding: 12px 8px;
+  }
+  html[dir="rtl"] .inputbox input:not(#symbol){ direction: ltr; text-align: right; }
+  .inputbox input::placeholder{ color: #c2b9dc; }
+
+  .target .inputbox{ border-color: var(--purple-soft); }
+
+  hr.rule{
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 22px 0 18px;
+  }
+
+  .result{
+    border-radius: 12px;
+    padding: 18px 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    min-height: 96px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap: 6px;
+    transition: box-shadow .3s, border-color .3s, background .3s;
+  }
+  .result.ok{ background: var(--green-bg); border-color: var(--green-border); box-shadow: 0 0 26px -10px rgba(13,150,104,0.35); }
+  .result.bad{ background: var(--red-bg); border-color: var(--red-border); }
+
+  .result .cap{
+    font-size: 11.5px;
+    color: var(--text-dim);
+    letter-spacing: .5px;
+  }
+  .result .big{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--purple-dark);
+    line-height:1.15;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .result.ok .big{ color: var(--green); }
+  .result .big .u{
+    font-size: 15px;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+  .result.bad .big{ color: var(--red); font-size: 16px; font-weight: 500; line-height:1.5; }
+
+  .result .note{
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .result .note b{ color: var(--text); font-weight:700; }
+
+  .foot{
+    margin-top:16px;
+    font-size: 11px;
+    color: #a99fc4;
+    text-align:center;
+    line-height:1.7;
+  }
+
+  @media (max-width:380px){
+    .board{ padding: 20px 16px 18px; }
+    .result .big{ font-size: 26px; }
+    .ticker{ font-size: 10.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="ticker mono"><span class="dot"></span> <span id="tickerText">لوحة التداول · حاسبة متوسط تكلفة السهم</span></div>
+    <div class="langtoggle">
+      <button id="btnAr" class="active">عربي</button>
+      <button id="btnEn">EN</button>
+    </div>
+  </div>
+
+  <div class="board">
+    <h1 id="tTitle">متوسط ياصل</h1>
+    <p class="sub" id="tSub">دخّل بياناتك الحالية والمتوسط اللي تبي توصله، وبنحسب لك كم سهم لازم تشتري بالسعر الحالي عشان يوصل متوسطك للمطلوب.</p>
+
+    <div class="field">
+      <label><span id="lSymbol">اسم السهم</span> <span class="code">SYMBOL</span></label>
+      <div class="inputbox"><input type="text" id="symbol" placeholder="AAPL"></div>
+    </div>
+
+    <div class="field">
+      <label><span id="lPrice">سعر السهم الحالي</span> <span class="code">PRICE</span></label>
+      <div class="inputbox"><input inputmode="decimal" id="price" placeholder="0.00"><span class="unit">$</span></div>
+    </div>
+
+    <div class="field">
+      <label><span id="lAvg">متوسط سعري الحالي</span> <span class="code">AVG</span></label>
+      <div class="inputbox"><input inputmode="decimal" id="avg" placeholder="0.00"><span class="unit">$</span></div>
+    </div>
+
+    <div class="field">
+      <label><span id="lQty">عدد أسهمي الحالي</span> <span class="code">QTY</span></label>
+      <div class="inputbox"><input inputmode="decimal" id="qty" placeholder="0"><span class="unit" id="uQty">سهم</span></div>
+    </div>
+
+    <div class="field target">
+      <label><span id="lTarget">المتوسط اللي أبي أوصله</span> <span class="code">TARGET</span></label>
+      <div class="inputbox"><input inputmode="decimal" id="target" placeholder="0.00"><span class="unit">$</span></div>
+    </div>
+
+    <hr class="rule">
+
+    <div class="result" id="result">
+      <div class="cap" id="rCap">النتيجة</div>
+      <div class="big" id="resultBig">—</div>
+      <div class="note" id="resultNote">عبّي الخانات الأربع فوق عشان تطلع لك النتيجة.</div>
+    </div>
+
+    <div class="foot" id="tFoot">الحساب تقديري ولا يشمل العمولات أو الضريبة. تأكد من أرقامك قبل التنفيذ.</div>
+  </div>
+</div>
+
+<script>
+const T = {
+  ar: {
+    dir: 'rtl',
+    title: 'متوسط ياصل',
+    sub: 'دخّل بياناتك الحالية والمتوسط اللي تبي توصله، وبنحسب لك كم سهم لازم تشتري بالسعر الحالي عشان يوصل متوسطك للمطلوب.',
+    symbol: 'اسم السهم', price: 'سعر السهم الحالي', avg: 'متوسط سعري الحالي',
+    qty: 'عدد أسهمي الحالي', target: 'المتوسط اللي أبي أوصله',
+    share: 'سهم', shares: 'سهم',
+    resultCap: 'النتيجة',
+    empty: 'عبّي الخانات الأربع فوق عشان تطلع لك النتيجة.',
+    invalid: 'تأكد من السعر وعدد الأسهم',
+    invalidNote: 'لازم تكون أكبر من صفر.',
+    samePrice: 'مو ممكن بهذا السعر',
+    samePriceNote: 'إذا سعر السهم الحالي يساوي المتوسط المطلوب، الشراء ما يغيّر المتوسط أبد.',
+    outOfRange: 'المتوسط المطلوب غير قابل للتحقيق بالشراء',
+    outOfRangeNote: (dir) => `المتوسط اللي تبيه لازم يكون بين متوسطك الحالي وسعر السهم الحالي. حالياً هو ${dir}.`,
+    dirAbove: 'أعلى من متوسطك الحالي وأعلى من سعر السهم الحالي',
+    dirBelow: 'أقل من متوسطك الحالي وأقل من سعر السهم الحالي',
+    okNote: (cost, total, newAvg) => `بتكلفة تقريبية <b>$${cost}</b> — بعد الشراء، إجمالي أسهمك ${total} ومتوسطك <b>$${newAvg}</b>.`,
+    tickerDefault: 'لوحة التداول · حاسبة متوسط تكلفة السهم',
+    foot: 'الحساب تقديري ولا يشمل العمولات أو الضريبة. تأكد من أرقامك قبل التنفيذ.'
+  },
+  en: {
+    dir: 'ltr',
+    title: 'Reach My Average',
+    sub: 'Enter your current position and the average you want to reach, and we\u2019ll calculate how many shares to buy at the current price to get there.',
+    symbol: 'Stock symbol', price: 'Current stock price', avg: 'My current average',
+    qty: 'My current shares', target: 'Average I want to reach',
+    share: 'share', shares: 'shares',
+    resultCap: 'Result',
+    empty: 'Fill in the four fields above to see your result.',
+    invalid: 'Check the price and share count',
+    invalidNote: 'Both must be greater than zero.',
+    samePrice: 'Not possible at this price',
+    samePriceNote: 'If the current price equals your target average, buying more shares won\u2019t change your average.',
+    outOfRange: 'Target average can\u2019t be reached by buying',
+    outOfRangeNote: (dir) => `Your target average must fall between your current average and the current price. Right now it\u2019s ${dir}.`,
+    dirAbove: 'above both your current average and the current price',
+    dirBelow: 'below both your current average and the current price',
+    okNote: (cost, total, newAvg) => `Approx. cost <b>$${cost}</b> — after buying, you\u2019ll hold ${total} shares total with an average of <b>$${newAvg}</b>.`,
+    tickerDefault: 'Trading Desk · Average Cost Calculator',
+    foot: 'This is an estimate only and excludes commissions or taxes. Double-check your numbers before trading.'
+  }
+};
+
+let lang = 'ar';
+
+const symbol = document.getElementById('symbol');
+const price = document.getElementById('price');
+const avg = document.getElementById('avg');
+const qty = document.getElementById('qty');
+const target = document.getElementById('target');
+const result = document.getElementById('result');
+const resultBig = document.getElementById('resultBig');
+const resultNote = document.getElementById('resultNote');
+const tickerText = document.getElementById('tickerText');
+
+function fmt(n, decimals){
+  if(!isFinite(n)) return '—';
+  return n.toLocaleString('en-US', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
+}
+
+function applyLang(){
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = t.dir;
+  document.getElementById('tTitle').textContent = t.title;
+  document.getElementById('tSub').textContent = t.sub;
+  document.getElementById('lSymbol').textContent = t.symbol;
+  document.getElementById('lPrice').textContent = t.price;
+  document.getElementById('lAvg').textContent = t.avg;
+  document.getElementById('lQty').textContent = t.qty;
+  document.getElementById('lTarget').textContent = t.target;
+  document.getElementById('uQty').textContent = t.shares;
+  document.getElementById('rCap').textContent = t.resultCap;
+  document.getElementById('tFoot').textContent = t.foot;
+  document.getElementById('btnAr').classList.toggle('active', lang==='ar');
+  document.getElementById('btnEn').classList.toggle('active', lang==='en');
+  updateTicker();
+  calc();
+}
+
+function updateTicker(){
+  const t = T[lang];
+  const s = symbol.value.trim();
+  tickerText.textContent = s ? `$${s.toUpperCase()} · ${t.tickerDefault}` : t.tickerDefault;
+}
+symbol.addEventListener('input', updateTicker);
+
+document.getElementById('btnAr').addEventListener('click', () => { lang='ar'; applyLang(); });
+document.getElementById('btnEn').addEventListener('click', () => { lang='en'; applyLang(); });
+
+function calc(){
+  const t = T[lang];
+  const P = parseFloat(price.value);
+  const A = parseFloat(avg.value);
+  const N = parseFloat(qty.value);
+  const Tg = parseFloat(target.value);
+
+  const filled = [P,A,N,Tg].every(v => !isNaN(v) && v >= 0);
+
+  if(!filled){
+    result.className = 'result';
+    resultBig.textContent = '—';
+    resultNote.textContent = t.empty;
+    return;
+  }
+
+  if(N <= 0 || P <= 0){
+    result.className = 'result bad';
+    resultBig.textContent = t.invalid;
+    resultNote.textContent = t.invalidNote;
+    return;
+  }
+
+  if(P === Tg){
+    result.className = 'result bad';
+    resultBig.textContent = t.samePrice;
+    resultNote.textContent = t.samePriceNote;
+    return;
+  }
+
+  const x = N * (Tg - A) / (P - Tg);
+
+  if(x <= 0){
+    result.className = 'result bad';
+    resultBig.textContent = t.outOfRange;
+    const dirText = Tg > A ? t.dirAbove : t.dirBelow;
+    resultNote.textContent = t.outOfRangeNote(dirText);
+    return;
+  }
+
+  const sharesNeeded = Math.ceil(x);
+  const cost = sharesNeeded * P;
+  const newTotalShares = N + sharesNeeded;
+  const newAvg = (N*A + sharesNeeded*P) / newTotalShares;
+
+  const s = symbol.value.trim();
+  const label = s ? `${s.toUpperCase()} ${t.shares}` : t.shares;
+
+  result.className = 'result ok';
+  resultBig.innerHTML = fmt(sharesNeeded,0) + `<span class="u">${label}</span>`;
+  resultNote.innerHTML = t.okNote(fmt(cost,2), fmt(newTotalShares,0), fmt(newAvg,3));
+}
+
+[price, avg, qty, target].forEach(el => el.addEventListener('input', calc));
+applyLang();
+</script>
+</body>
+</html>
